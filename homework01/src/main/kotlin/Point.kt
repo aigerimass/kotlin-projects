@@ -9,5 +9,24 @@ interface Point: DimentionAware
  *
  * Сама коллекция параметров недоступна, доступ - через методы интерфейса
  */
-class DefaultPoint: Point {
+class DefaultPoint(private vararg val vector: Int): Point {
+    override val ndim = this.vector.size
+
+    override fun dim(i: Int): Int = vector[i]
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as DefaultPoint
+
+        if (!vector.contentEquals(other.vector)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return vector.contentHashCode()
+    }
+
 }
