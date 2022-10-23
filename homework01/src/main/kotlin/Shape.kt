@@ -1,4 +1,3 @@
-
 interface Shape: DimentionAware, SizeAware
 
 /**
@@ -16,7 +15,12 @@ interface Shape: DimentionAware, SizeAware
  */
 class DefaultShape(private vararg val dimensions: Int): Shape {
     override val ndim = dimensions.size
-    override fun dim(i: Int): Int = dimensions[i]
+    override fun dim(i: Int): Int {
+        if (i >= ndim) {
+            throw DimensionException.NoSuchDimension("Shape doesn't have $i dimension")
+        }
+        return dimensions[i]
+    }
 
     override val size: Int
 

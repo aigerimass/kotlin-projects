@@ -12,7 +12,12 @@ interface Point: DimentionAware
 class DefaultPoint(private vararg val vector: Int): Point {
     override val ndim = this.vector.size
 
-    override fun dim(i: Int): Int = vector[i]
+    override fun dim(i: Int): Int {
+        if (i >= ndim) {
+            throw DimensionException.NoSuchDimension("Point doesn't have $i dimension")
+        }
+        return vector[i]
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
