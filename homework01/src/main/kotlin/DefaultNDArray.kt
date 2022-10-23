@@ -108,23 +108,9 @@ class DefaultNDArray private constructor(
     override fun add(other: NDArray) {
         when (ndim) {
             other.ndim -> {
-                (0 until ndim).forEach {
-                    if (dim(it) != other.dim(it)) throw NDArrayException.IllegalAddArgumentsException(
-                        it,
-                        dim(it),
-                        other.dim(it)
-                    )
-                }
                 (0 until size).forEach { values[it] += other.at(getPointByIndex(it, ndim)) }
             }
             1 -> {
-                (0 until ndim - 1).map {
-                    if (dim(it ) != other.dim(it)) throw NDArrayException.IllegalAddArgumentsException(
-                        it,
-                        dim(it),
-                        other.dim(it)
-                    )
-                }
                 (0 until size).forEach { values[it] += other.at(getPointByIndex(it, ndim - 1)) }
             }
             else -> throw NDArrayException.IllegalNDArrayDimsException(ndim, other.ndim)
@@ -147,8 +133,7 @@ class DefaultNDArray private constructor(
                 for (k in 0 until dim(1)) {
                     newValues[index] += this.at(DefaultPoint(i, k)) * other.at(
                         if (other.ndim == 2) DefaultPoint(
-                            k,
-                            j
+                            k, j
                         ) else DefaultPoint(k)
                     )
                 }
@@ -189,6 +174,7 @@ class DefaultNDArray private constructor(
 
     override val size: Int
         get() = shape.size
+
     private val posByDim = IntArray(shape.ndim)
 
     init {

@@ -82,20 +82,20 @@ internal class NDArrayTest {
         assertEquals(34, data2.at(DefaultPoint(4, 3)))
     }
 
-//    @Test
-//    fun testAdd() {
-//        val data = DefaultNDArray.ones(DefaultShape(5, 3))
-//        val data2 = data.copy()
-//
-//        data.set(DefaultPoint(3, 2), 34)
-//        data2.set(DefaultPoint(2, 1), 4)
-//        data2.set(DefaultPoint(1, 0), 75)
-//        data.set(DefaultPoint(0, 1), 57)
-//
-//        data.add(data2)
-//
-//        assertEquals(2, data.at(DefaultPoint(0, 0)))
-//        assertEquals(58, data.at(DefaultPoint(0, 1)))
-//        assertEquals(2, data.at(DefaultPoint(0, 2)))
-//    }
+    @Test
+    fun testAdd() {
+        val data = DefaultNDArray.ones(DefaultShape(5, 3))
+        val data2 = data.copy()
+
+        data.set(DefaultPoint(3, 2), 34)
+        data2.set(DefaultPoint(2, 1), 4)
+        data2.set(DefaultPoint(1, 0), 75)
+        data.set(DefaultPoint(0, 1), 57)
+
+        data.add(data2)
+
+        assertEquals(2, data.at(DefaultPoint(0, 0)))
+        assertEquals(58, data.at(DefaultPoint(0, 1)))
+        assertEquals(2, data.at(DefaultPoint(0, 2)))
+    }
 }
