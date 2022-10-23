@@ -106,15 +106,9 @@ class DefaultNDArray private constructor(
     override fun view(): NDArray = DefaultNDArray(shape, values)
 
     override fun add(other: NDArray) {
-        when (ndim) {
-            other.ndim -> {
-                (0 until size).forEach { values[it] += other.at(getPointByIndex(it, ndim)) }
-            }
-            1 -> {
-                (0 until size).forEach { values[it] += other.at(getPointByIndex(it, ndim - 1)) }
-            }
-            else -> throw NDArrayException.IllegalNDArrayDimsException(ndim, other.ndim)
-        }
+        val diff: Int = ndim - other.ndim
+        if (diff > 1) throw NDArrayException.IllegalNDArrayDimsException(ndim, other.ndim)
+        (0 until size).forEach { values[it] += other.at(getPointByIndex(it, ndim - diff)) }
     }
 
     override fun dot(other: NDArray): NDArray {
