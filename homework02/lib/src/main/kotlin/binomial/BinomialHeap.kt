@@ -61,7 +61,7 @@ class BinomialHeap<T: Comparable<T>> private constructor(private val trees: FLis
      *
      * Требуемая сложность - O(log(n))
      */
-    fun top(): T = if (trees.isEmpty) throw NoSuchElementException() else trees.minOf { tree -> tree!!.value }
+    fun top(): T = minTree()?.value!!
 
     /*
      * удаление элемента
@@ -69,7 +69,15 @@ class BinomialHeap<T: Comparable<T>> private constructor(private val trees: FLis
      * Требуемая сложность - O(log(n))
      */
     fun drop(): BinomialHeap<T> {
-        TODO()
+        val minTree = minTree()
+        val t1 = BinomialHeap(minTree?.children?.reverse().map { it })
+        val t2 = BinomialHeap(trees.filter { it != minTree})
+        return t2.plus(t1)
+    }
+
+    private fun minTree(): BinomialTree<T> {
+        return trees.fold((trees as FList.Cons).head)
+        { t1, t2 -> if (t1 == null || (t2 != null && t2.value < t1.value)) t2 else t1 }!!
     }
 }
 
