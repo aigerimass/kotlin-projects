@@ -16,7 +16,7 @@ interface SelfMergeable<T> {
  *  - циклы
  *  - стандартные коллекции
  *
- * Детали внутренней реазации должны быть спрятаны
+ * Детали внутренней реализации должны быть спрятаны
  * Создание - только через single() и plus()
  *
  * Дерево совсем без элементов не предусмотрено
@@ -24,7 +24,7 @@ interface SelfMergeable<T> {
 
 class BinomialTree<T: Comparable<T>> private constructor(val value: T, val children: FList<BinomialTree<T>>): SelfMergeable<BinomialTree<T>> {
     // порядок дерева
-    val order: Int = TODO()
+    val order: Int = children.size
 
     /*
      * слияние деревьев
@@ -33,10 +33,14 @@ class BinomialTree<T: Comparable<T>> private constructor(val value: T, val child
      * Требуемая сложность - O(1)
      */
     override fun plus(other: BinomialTree<T>): BinomialTree<T> {
-        TODO()
+        if (other.order != order) throw IllegalArgumentException()
+        if (other.value > value) {
+            return BinomialTree(value, FList.Cons(other, children))
+        }
+        return BinomialTree(other.value, FList.Cons(this, children))
     }
 
     companion object {
-        fun <T: Comparable<T>> single(value: T): BinomialTree<T> = TODO()
+        fun <T: Comparable<T>> single(value: T): BinomialTree<T> = BinomialTree(value, FList.nil())
     }
 }
