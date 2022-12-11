@@ -12,9 +12,15 @@ class App {
         val topic = RedditClient.getTopic("Kotlin")
         println(topic)
     }
+
+    fun dummy_comments() = runBlocking {
+        val comments = RedditClient.getComments("z3qwxa/additional_monads_not_defined_in_arrow")
+        println(comments)
+    }
 }
 
 fun main() {
     println(App().greeting)
-    App().dummy_start()
+//    App().dummy_start()
+    App().dummy_comments()
 }

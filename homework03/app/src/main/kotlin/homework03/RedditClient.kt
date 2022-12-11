@@ -2,6 +2,7 @@ package homework03
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import homework03.dto.CommentsSnapshot
 import homework03.dto.JsonAboutWrapper
 import homework03.dto.JsonPostsWrapper
 import homework03.dto.TopicSnapshot
@@ -23,12 +24,17 @@ object RedditClient {
     }
 
     private suspend fun getAboutTopic(name: String): JsonAboutWrapper.TopicAbout {
-        val aboutTopicJson = httpClient.get("https://www.reddit.com/r/$name/about.json").body<String>()
-        return objectMapper.readValue(aboutTopicJson, JsonAboutWrapper::class.java).data
+        val json = httpClient.get("https://www.reddit.com/r/$name/about.json").body<String>()
+        return objectMapper.readValue(json, JsonAboutWrapper::class.java).data
     }
 
     private suspend fun getPosts(name: String): JsonPostsWrapper.JsonPosts {
-        val postsJson = httpClient.get("https://www.reddit.com/r/$name/.json").body<String>()
-        return objectMapper.readValue(postsJson, JsonPostsWrapper::class.java).data
+        val json = httpClient.get("https://www.reddit.com/r/$name/.json").body<String>()
+        return objectMapper.readValue(json, JsonPostsWrapper::class.java).data
+    }
+
+    suspend fun getComments(title: String): CommentsSnapshot {
+        val json = httpClient.get("https://www.reddit.com/r/Kotlin/comments/$title/.json").body<String>()
+        return CommentsSnapshot.parse(objectMapper, json)
     }
 }
