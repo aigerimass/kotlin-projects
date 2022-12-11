@@ -14,6 +14,10 @@ import io.ktor.client.request.*
 object RedditClient {
     private val httpClient = HttpClient(CIO)
     private val objectMapper = ObjectMapper()
+    private val mainURL = "https://www.reddit.com/r/"
+    private val commPartURL = "/comments/"
+    private val jsonPartURL = "/.json"
+    private val aboutURL = "/about.json"
 
     init {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -24,17 +28,21 @@ object RedditClient {
     }
 
     private suspend fun getAboutTopic(name: String): JsonAboutWrapper.TopicAbout {
-        val json = httpClient.get("https://www.reddit.com/r/$name/about.json").body<String>()
+        val json = httpClient.get(mainURL + name + aboutURL).body<String>()
         return objectMapper.readValue(json, JsonAboutWrapper::class.java).data
     }
 
     private suspend fun getPosts(name: String): JsonPostsWrapper.JsonPosts {
-        val json = httpClient.get("https://www.reddit.com/r/$name/.json").body<String>()
+        val json = httpClient.get(mainURL + name + jsonPartURL).body<String>()
         return objectMapper.readValue(json, JsonPostsWrapper::class.java).data
     }
 
-    suspend fun getComments(title: String): CommentsSnapshot {
-        val json = httpClient.get("https://www.reddit.com/r/Kotlin/comments/$title/.json").body<String>()
+    suspend fun getComments(url: String): CommentsSnapshot {
+        val json = httpClient.get(url + jsonPartURL).body<String>()
         return CommentsSnapshot.parse(objectMapper, json)
+    }
+
+    suspend fun getComments(topicName: String, title: String): CommentsSnapshot {
+        return getComments(mainURL + topicName + commPartURL + title + jsonPartURL)
     }
 }

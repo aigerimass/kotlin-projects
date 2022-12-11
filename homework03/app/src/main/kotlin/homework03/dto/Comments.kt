@@ -24,42 +24,45 @@ data class CommentsSnapshot(
     val comments: List<Comment>
 ) {
     companion object {
-        private val comments: MutableList<Comment> = arrayListOf()
-
         fun parse(objectMapper: ObjectMapper, json: String): CommentsSnapshot {
+            val comments: MutableList<Comment> = arrayListOf()
+
+            fun parseComment(jsonComment: JsonNode, parentId: Long?, depth: Int): Comment =
+                with(jsonComment.get("data")) {
+                    val curId = countComments++
+
+                    val children: MutableList<Long> = arrayListOf()
+                    val replies = get("replies")?.get("data")?.get("children")
+                    if (replies != null) {
+                        for (child in replies) {
+                            children.add(parseComment(child, curId, depth + 1).id)
+                        }
+                    }
+
+                    val comment = Comment(
+                        creationTime = Date(get("created").asLong() * 1000),
+                        ups = get("ups").asLong(),
+                        downs = get("downs").asLong(),
+                        text = get("body").toPrettyString(),
+                        author = get("author").toString(),
+                        replyTo = parentId,
+                        replies = children,
+                        depth = depth,
+                        id = curId
+                    )
+                    comments.add(comment)
+                    return comment
+                }
+
             val jsonComments = objectMapper.readTree(json).get(1).get("data").get("children")
             for (jsonComment in jsonComments) {
                 parseComment(jsonComment, null, 0)
             }
             comments.sortBy { it.id }
             return CommentsSnapshot(comments)
+
+
         }
 
-        private fun parseComment(jsonComment: JsonNode, parentId: Long?, depth: Int): Comment =
-            with(jsonComment.get("data")) {
-                val curId = countComments++
-
-                val children: MutableList<Long> = arrayListOf()
-                val replies = get("replies")?.get("data")?.get("children")
-                if (replies != null) {
-                    for (child in replies) {
-                        children.add(parseComment(child, curId, depth + 1).id)
-                    }
-                }
-
-                val comment = Comment(
-                    creationTime = Date(get("created").asLong() * 1000),
-                    ups = get("ups").asLong(),
-                    downs = get("downs").asLong(),
-                    text = get("body").toPrettyString(),
-                    author = get("author").toPrettyString(),
-                    replyTo = parentId,
-                    replies = children,
-                    depth = depth,
-                    id = curId
-                )
-                comments.add(comment)
-                return comment
-            }
     }
 }
