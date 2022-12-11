@@ -42,7 +42,7 @@ object RedditClient {
         return CommentsSnapshot.parse(objectMapper, json)
     }
 
-    suspend fun getComments(topicName: String, title: String): CommentsSnapshot {
-        return getComments(mainURL + topicName + commPartURL + title + jsonPartURL)
+    suspend fun getComments(topicName: String, threadID: String): CommentsSnapshot {
+        return getComments(mainURL + topicName + commPartURL + threadID + jsonPartURL)
     }
 }

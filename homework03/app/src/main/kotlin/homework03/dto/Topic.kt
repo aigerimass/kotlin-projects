@@ -3,22 +3,18 @@ package homework03.dto
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.*
 
-var countSnapshot = 0
 data class TopicSnapshot(
     val publishDate: Date,
     val activeSubscribers: Long,
-    val sizeRanking: String?,
     val description: String,
     val posts: List<Post>
 ) {
-    val id = ++countSnapshot
-    val downloadTime = System.currentTimeMillis()
+    val downloadTime = Date(System.currentTimeMillis())
 
     companion object {
         fun get(topicAbout: JsonAboutWrapper.TopicAbout, JsonPosts: JsonPostsWrapper.JsonPosts) = TopicSnapshot(
             publishDate = Date(topicAbout.createdEpochTime.toLong() * 1000),
             activeSubscribers = topicAbout.activeUserCount,
-            sizeRanking = topicAbout.rankingSize,
             description = topicAbout.publicDescription,
             posts = JsonPosts.jsonPostWrappers.map {it.data}
         )
@@ -35,7 +31,7 @@ data class JsonAboutWrapper(@JsonProperty("data") val data: TopicAbout) {
 }
 
 data class Post(
-    @JsonProperty("author_fullname") val author: String,
+    @JsonProperty("author") val author: String,
     @JsonProperty("created") val createdEpochTime: Double,
     @JsonProperty("ups") val upVotes: Long,
     @JsonProperty("downs") val downVotes: Long,
