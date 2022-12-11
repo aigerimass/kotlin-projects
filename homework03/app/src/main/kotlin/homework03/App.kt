@@ -13,35 +13,36 @@ import kotlinx.coroutines.runBlocking
 
 
 class App {
-    val greeting: String
-        get() {
-            return "Hello World!"
+    // get all comments from recent threads in topic
+    suspend fun getRecentThreads(path: String, topics: List<String>) = runBlocking {
+        data class PostWrapper(val idTopic: String, val idPost: String, val post: Post)
+        val postJobs = arrayListOf<Deferred<List<PostWrapper>>>()
+        topics.map { topic ->
+            postJobs.add(async { RedditClient.getTopic(topic).posts.map {PostWrapper(topic, it.id, it)} })
+        }
+        val posts = postJobs.awaitAll().flatten()
+        val postsCSV = csvSerialize(posts, PostWrapper::class)
+        writeToCSV(postsCSV, path, "--subjects.csv")
+
+        // got all posts, let's take comments from them
+        data class CommentWrapper(val a_id: String, val comment: Comment)
+
+        val commentJobs = arrayListOf<Deferred<List<CommentWrapper>>>()
+        posts.map { post ->
+            commentJobs.add(async {
+                RedditClient.getComments(post.idTopic, post.idPost).comments.map {
+                    CommentWrapper(post.idPost, it)
+                }
+            })
         }
 
-    fun dummy_start() = runBlocking {
-        val topic = RedditClient.getTopic("Kotlin")
-        println(topic)
-    }
+        val commentsCsv = csvSerialize(commentJobs.awaitAll().flatten(), CommentWrapper::class)
+        writeToCSV(commentsCsv, path, "--comments.csv")
 
-    fun dummy_comments() = runBlocking {
-        val comments = RedditClient.getComments(
-            "https://www.reddit.com/r/Kotlin/comments/z02i23/what_is_dispatchersdefaults_maximum_number_of/.json"
-        )
-        println(comments)
-        val comments2 = RedditClient.getComments("Kotlin", "z3qwxa")
-        println(comments2)
-    }
-
-    private suspend fun writeToCSV(csv: String, path: String, filename: String) {
-        val fileVfs = localVfs(path)
-        fileVfs[filename].delete()
-        val file = fileVfs[filename].open(VfsOpenMode.CREATE)
-        file.writeString(csv)
-        file.close()
     }
 
     // inside every topic we get comments to exact thread
-    suspend fun getInfoFromThreads(path: String, topics: List<String>, threadIds: List<String>) = runBlocking {
+    suspend fun getThread(path: String, topics: List<String>, threadIds: List<String>) = runBlocking {
         val topicJobs = arrayListOf<Deferred<List<Post>>>()
         val commentJobs = arrayListOf<Deferred<List<Comment>>>()
         for (i in topics.indices) {
@@ -54,15 +55,17 @@ class App {
         val commentsCsv = csvSerialize(commentJobs.awaitAll().flatten(), Comment::class)
         writeToCSV(commentsCsv, path, "--comments.csv")
     }
+
+    private suspend fun writeToCSV(csv: String, path: String, filename: String) {
+        val fileVfs = localVfs(path)
+        fileVfs[filename].delete()
+        val file = fileVfs[filename].open(VfsOpenMode.CREATE)
+        file.writeString(csv)
+        file.close()
+    }
 }
 
-
 fun main(args: Array<String>) = runBlocking {
-    if (args.size % 2 != 1 || args.size < 3) {
-        throw IllegalArgumentException("Correct args: path, topic name[1], thread name[1], ...")
-    }
-    val path = args[0]
-    val topics = args.filterIndexed { i, _ -> i % 2 == 1 }
-    val threads = args.filterIndexed { i, _ -> i % 2 == 0 && i > 0 }
-    App().getInfoFromThreads(path, topics, threads)
+    if (args.size < 2) throw IllegalArgumentException("arg0: path, other args: topics names")
+    App().getRecentThreads(args[0], args.asList().subList(1, args.size))
 }

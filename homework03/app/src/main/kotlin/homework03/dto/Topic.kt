@@ -37,7 +37,8 @@ data class Post(
     @JsonProperty("downs") val downVotes: Long,
     @JsonProperty("title") val title: String,
     @JsonProperty("selftext") val selftext: String?,
-    @JsonProperty("selftext_html") val selfhtmlText: String?
+    @JsonProperty("selftext_html") val selfhtmlText: String?,
+    @JsonProperty("id") val id: String
 )
 
 data class JsonPostsWrapper(@JsonProperty("data") val data: JsonPosts) {

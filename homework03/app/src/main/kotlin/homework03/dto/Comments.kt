@@ -7,15 +7,15 @@ import java.util.*
 var countComments: Long = 0
 
 data class Comment(
+    val id: Long,
     val creationTime: Date,
+    val author: String,
+    val depth: Int,
+    val text: String,
     val ups: Long,
     val downs: Long,
-    val text: String,
-    val author: String,
     val replyTo: Long?,
-    val replies: List<Long>,
-    val depth: Int,
-    val id: Long
+    val replies: List<Long>
 ) {
     val downloadTime = Date(System.currentTimeMillis())
 }
@@ -27,7 +27,7 @@ data class CommentsSnapshot(
         fun parse(objectMapper: ObjectMapper, json: String): CommentsSnapshot {
             val comments: MutableList<Comment> = arrayListOf()
 
-            fun parseComment(jsonComment: JsonNode, parentId: Long?, depth: Int): Comment =
+            fun parseComment(jsonComment: JsonNode, parentId: Long?, depth: Int): Comment? =
                 with(jsonComment.get("data")) {
                     val curId = countComments++
 
@@ -35,23 +35,28 @@ data class CommentsSnapshot(
                     val replies = get("replies")?.get("data")?.get("children")
                     if (replies != null) {
                         for (child in replies) {
-                            children.add(parseComment(child, curId, depth + 1).id)
+                            val childCom = parseComment(child, curId, depth + 1)
+                            if (childCom != null) children.add(childCom.id)
                         }
                     }
-
-                    val comment = Comment(
-                        creationTime = Date(get("created").asLong() * 1000),
-                        ups = get("ups").asLong(),
-                        downs = get("downs").asLong(),
-                        text = get("body").toPrettyString(),
-                        author = get("author").toString(),
-                        replyTo = parentId,
-                        replies = children,
-                        depth = depth,
-                        id = curId
-                    )
-                    comments.add(comment)
-                    return comment
+                    // some comments are not parsable, just skip
+                    try {
+                        val comment = Comment(
+                            creationTime = Date(get("created").asLong() * 1000),
+                            ups = get("ups").asLong(),
+                            downs = get("downs").asLong(),
+                            text = get("body").toPrettyString(),
+                            author = get("author").toString(),
+                            replyTo = parentId,
+                            replies = children,
+                            depth = depth,
+                            id = curId
+                        )
+                        comments.add(comment)
+                        return comment
+                    } catch (e: Exception) {
+                        return null
+                    }
                 }
 
             val jsonComments = objectMapper.readTree(json).get(1).get("data").get("children")

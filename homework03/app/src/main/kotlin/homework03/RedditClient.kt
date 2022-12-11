@@ -43,6 +43,6 @@ object RedditClient {
     }
 
     suspend fun getComments(topicName: String, threadID: String): CommentsSnapshot {
-        return getComments(mainURL + topicName + commPartURL + threadID + jsonPartURL)
+        return getComments(mainURL + topicName + commPartURL + threadID)
     }
 }
