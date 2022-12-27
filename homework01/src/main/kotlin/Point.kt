@@ -25,9 +25,7 @@ class DefaultPoint(private vararg val vector: Int): Point {
 
         other as DefaultPoint
 
-        if (!vector.contentEquals(other.vector)) return false
-
-        return true
+        return vector.contentEquals(other.vector)
     }
 
     override fun hashCode(): Int {

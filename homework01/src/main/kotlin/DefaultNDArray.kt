@@ -178,30 +178,25 @@ class DefaultNDArray private constructor(
         }
     }
 
-    override fun dim(i: Int): Int {
-        if (i >= ndim) {
-            throw DimensionException.NoSuchDimension("Shape doesn't have $i dimension")
-        }
-        return values[i]
-    }
+    override fun dim(i: Int): Int = shape.dim(i)
 }
 
 sealed class NDArrayException(reason: String = "") : Exception(reason) {
-    class IllegalPointCoordinateException(index: Int, pointDim: Int, shapeDim: Int) : NDArrayException(
+    class IllegalPointCoordinateException(val index: Int, val pointDim: Int, val shapeDim: Int) : NDArrayException(
         "Trouble at $index : value is $pointDim, shape dimension is $shapeDim"
     )
 
-    class IllegalPointDimensionException(pointDims: Int, shapeDims: Int) : NDArrayException(
+    class IllegalPointDimensionException(val pointDims: Int, val shapeDims: Int) : NDArrayException(
         "Shape has $shapeDims dims, point has $pointDims, should be equal"
     )
 
-    class IllegalAddArgumentsException(index: Int, expected: Int, actual: Int) : NDArrayException(
+    class IllegalAddArgumentsException(val index: Int, val expected: Int, val actual: Int) : NDArrayException(
         "$index position: $expected in current NDArray not equals to other's $actual"
     )
 
-    class IllegalNDArrayDimsException(NDim: Int, otherNDim: Int) : NDArrayException(
+    class IllegalNDArrayDimsException(val NDim: Int, val otherNDim: Int) : NDArrayException(
         "dims incompatible: other: $otherNDim, this: $NDim"
     )
 
-    class IllegalDotArgumentsException(reason: String) : NDArrayException(reason)
+    class IllegalDotArgumentsException(val reason: String) : NDArrayException(reason)
 }
