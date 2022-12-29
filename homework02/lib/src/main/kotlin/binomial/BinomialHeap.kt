@@ -33,25 +33,11 @@ class BinomialHeap<T: Comparable<T>> private constructor(private val trees: FLis
      *
      * Требуемая сложность - O(log(n))
      */
-    override fun plus(other :BinomialHeap<T>): BinomialHeap<T> {
-        if (trees.isEmpty) return other
-        if (other.trees.isEmpty) return other
-        val treesCons = trees as FList.Cons
-        val oTreesCons = other.trees as FList.Cons
-        if (treesCons.head!!.order == oTreesCons.head!!.order)
-            return BinomialHeap(FList.Cons(oTreesCons.head.plus(treesCons.head),
-                BinomialHeap(oTreesCons.tail).plus(BinomialHeap(treesCons.tail)).trees))
-        if (treesCons.head.order < oTreesCons.head.order) {
-            return BinomialHeap(FList.Cons(treesCons.head, FList.Cons(oTreesCons.head,
-                BinomialHeap(oTreesCons.tail).plus(BinomialHeap(treesCons.tail)).trees)))
-        }
-        return BinomialHeap(FList.Cons(oTreesCons.head, FList.Cons(treesCons.head,
-                BinomialHeap(oTreesCons.tail).plus(BinomialHeap(treesCons.tail)).trees)))
-    }
+    override fun plus(other: BinomialHeap<T>): BinomialHeap<T> = BinomialHeap(mergeTrees(trees, other.trees))
 
     /*
      * добавление элемента
-     * 
+     *
      * Требуемая сложность - O(log(n))
      */
     operator fun plus(elem: T): BinomialHeap<T> = plus(single(elem))
@@ -61,7 +47,11 @@ class BinomialHeap<T: Comparable<T>> private constructor(private val trees: FLis
      *
      * Требуемая сложность - O(log(n))
      */
-    fun top(): T = minTree()?.value!!
+    fun top(): T {
+        val top = trees.filterNotNull().minOfOrNull { it.value }
+        if (top == null) throw IllegalArgumentException()
+        else return top
+    }
 
     /*
      * удаление элемента
@@ -70,14 +60,42 @@ class BinomialHeap<T: Comparable<T>> private constructor(private val trees: FLis
      */
     fun drop(): BinomialHeap<T> {
         val minTree = minTree()
-        val t1 = BinomialHeap(minTree?.children?.reverse().map { it })
-        val t2 = BinomialHeap(trees.filter { it != minTree})
-        return t2.plus(t1)
+        val leftTrees = trees.map {
+            if (it?.value != minTree.value && it?.order != minTree.order) it
+            else null
+        }
+        return BinomialHeap(mergeTrees(leftTrees, minTree.children.map { it }))
     }
 
-    private fun minTree(): BinomialTree<T> {
-        return trees.fold((trees as FList.Cons).head)
-        { t1, t2 -> if (t1 == null || (t2 != null && t2.value < t1.value)) t2 else t1 }!!
+    private fun minTree() : BinomialTree<T> {
+        val top = top()
+        return trees.first { it?.value == top }!!
+    }
+
+    private fun mergeTrees(left: FList<BinomialTree<T>?>, right: FList<BinomialTree<T>?>): FList<BinomialTree<T>?> {
+        if (left.size < right.size) return mergeTrees(right, left)
+        return recursiveMerge(left.reverse(), right.reverse(), null).reverse()
+    }
+
+    private fun recursiveMerge(left: FList<BinomialTree<T>?>, right: FList<BinomialTree<T>?>, addTree: BinomialTree<T>?
+    ): FList<BinomialTree<T>?> {
+        if (left.isEmpty) {
+            return if (addTree == null) FList.Nil() else FList.Cons(addTree, FList.Nil())
+        }
+        left as FList.Cons
+
+        if (right.isEmpty)
+            return if (addTree == null) left
+            else if (left.head == null) FList.Cons(addTree, left.tail)
+            else FList.Cons(null, recursiveMerge(left.tail, FList.Nil(), addTree + left.head))
+        right as FList.Cons
+
+        return if (left.head == null && right.head == null)
+            FList.Cons(addTree, recursiveMerge(left.tail, right.tail, null))
+        else if (left.head != null && right.head != null)
+            FList.Cons(addTree, recursiveMerge(left.tail, right.tail, left.head + right.head))
+        else if (addTree == null)
+            FList.Cons(left.head ?: right.head, recursiveMerge(left.tail, right.tail, null))
+        else FList.Cons(null, recursiveMerge(left.tail, right.tail, addTree + (left.head ?: right.head)!!))
     }
 }
-
