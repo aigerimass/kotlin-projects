@@ -12,15 +12,15 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 
 object RedditClient {
-    private val httpClient = HttpClient(CIO)
-    private val objectMapper = ObjectMapper()
-    private val mainURL = "https://www.reddit.com/r/"
-    private val commPartURL = "/comments/"
-    private val jsonPartURL = "/.json"
-    private val aboutURL = "/about.json"
+    private val HTTP_CLIENT = HttpClient(CIO)
+    private val OBJECT_MAPPER = ObjectMapper()
+    private val MAIN_URL = "https://www.reddit.com/r/"
+    private val COMM_URL = "/comments/"
+    private val JSON_URL = "/.json"
+    private val ABOUT_URL = "/about.json"
 
     init {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
 
     suspend fun getTopic(name: String): TopicSnapshot {
@@ -28,21 +28,21 @@ object RedditClient {
     }
 
     private suspend fun getAboutTopic(name: String): JsonAboutWrapper.TopicAbout {
-        val json = httpClient.get(mainURL + name + aboutURL).body<String>()
-        return objectMapper.readValue(json, JsonAboutWrapper::class.java).data
+        val json = HTTP_CLIENT.get(MAIN_URL + name + ABOUT_URL).body<String>()
+        return OBJECT_MAPPER.readValue(json, JsonAboutWrapper::class.java).data
     }
 
     private suspend fun getPosts(name: String): JsonPostsWrapper.JsonPosts {
-        val json = httpClient.get(mainURL + name + jsonPartURL).body<String>()
-        return objectMapper.readValue(json, JsonPostsWrapper::class.java).data
+        val json = HTTP_CLIENT.get(MAIN_URL + name + JSON_URL).body<String>()
+        return OBJECT_MAPPER.readValue(json, JsonPostsWrapper::class.java).data
     }
 
     suspend fun getComments(url: String): CommentsSnapshot {
-        val json = httpClient.get(url + jsonPartURL).body<String>()
-        return CommentsSnapshot.parse(objectMapper, json)
+        val json = HTTP_CLIENT.get(url + JSON_URL).body<String>()
+        return CommentsSnapshot.parse(OBJECT_MAPPER, json)
     }
 
     suspend fun getComments(topicName: String, threadID: String): CommentsSnapshot {
-        return getComments(mainURL + topicName + commPartURL + threadID)
+        return getComments(MAIN_URL + topicName + COMM_URL + threadID)
     }
 }

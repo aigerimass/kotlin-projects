@@ -2,6 +2,7 @@ package homework03.dto
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import java.lang.NullPointerException
 import java.util.*
 
 var countComments: Long = 0
@@ -15,7 +16,8 @@ data class Comment(
     val ups: Long,
     val downs: Long,
     val replyTo: Long?,
-    val replies: List<Long>
+    val replies: List<Long>,
+    var postId: String = ""
 ) {
     val downloadTime = Date(System.currentTimeMillis())
 }
@@ -54,7 +56,7 @@ data class CommentsSnapshot(
                         )
                         comments.add(comment)
                         return comment
-                    } catch (e: Exception) {
+                    } catch (e: NullPointerException) {
                         return null
                     }
                 }
@@ -65,8 +67,6 @@ data class CommentsSnapshot(
             }
             comments.sortBy { it.id }
             return CommentsSnapshot(comments)
-
-
         }
 
     }
