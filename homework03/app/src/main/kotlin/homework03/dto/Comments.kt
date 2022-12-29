@@ -16,8 +16,7 @@ data class Comment(
     val ups: Long,
     val downs: Long,
     val replyTo: Long?,
-    val replies: List<Long>,
-    var postId: String = ""
+    val replies: List<Long>
 ) {
     val downloadTime = Date(System.currentTimeMillis())
 }
