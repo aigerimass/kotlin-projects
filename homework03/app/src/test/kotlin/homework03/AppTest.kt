@@ -4,11 +4,11 @@
 package homework03
 
 import kotlin.test.Test
-import kotlin.test.assertNotNull
 
 class AppTest {
-    @Test fun appHasAGreeting() {
-        val classUnderTest = App()
-        assertNotNull(classUnderTest.greeting, "app should have a greeting")
+    @Test fun appWorks() {
+        main(arrayOf("/Users/aigerimass/HSE/kotlin-projects/homework03/app/src/test/kotlin/homework03",
+        "Kotlin",
+        "AskReddit"))
     }
 }
